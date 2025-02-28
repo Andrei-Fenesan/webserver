@@ -62,7 +62,7 @@ func TestShouldParseRequestShouldFaildWhenNoVersion(t *testing.T) {
 	assert.Nil(request)
 }
 
-func TestShouldParseRequestShouldFaildWhenNoFinal(t *testing.T) {
+func TestShouldParseRequestShouldFaildWhenNoFinalDelimiter(t *testing.T) {
 	assert := assert.New(t)
 
 	receivedData := `GET /asd Host: localhost:8081 User-Agent: curl/8.7.1 Accept: */*`

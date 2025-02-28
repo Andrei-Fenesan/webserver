@@ -44,7 +44,7 @@ func (cm *ConcurrentConnectionManger) Start() error {
 			log.Println("Error in listening" + err.Error())
 			continue
 		}
-		cm.handleConnection(conn)
+		go cm.handleConnection(conn)
 	}
 }
 

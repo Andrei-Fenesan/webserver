@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	requestHandler := handler.NewHttpRequestHandler("/Users/afenesan/Desktop/personalProj/challenges/webserver/resources")
+	requestHandler := handler.NewHttpRequestHandler("/Users/afenesan/Desktop/personalProj/challengesindependent/webserver/resources")
 	connManager := manager.NewConcurrentConnectionManger(requestHandler, 8081)
 	connManager.Start()
 }
