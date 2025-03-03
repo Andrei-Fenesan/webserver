@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"net"
@@ -70,7 +69,6 @@ func (cm *ConcurrentConnectionManger) handleConnection(conn net.Conn) {
 		return
 	}
 	responseData := response.Encode()
-	fmt.Println(string(responseData))
 	conn.Write(responseData)
 }
 
