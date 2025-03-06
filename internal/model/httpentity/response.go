@@ -24,10 +24,10 @@ func buildResponseCodeText(version string, responseCode uint16) string {
 	return fmt.Sprintf("%s %s %s\r\n\r\n",
 		version,
 		strconv.FormatUint(uint64(responseCode), 10),
-		responseMessage(responseCode))
+		getResponseMessage(responseCode))
 }
 
-func responseMessage(responseCode uint16) string {
+func getResponseMessage(responseCode uint16) string {
 	switch responseCode {
 	case 200:
 		return "OK"

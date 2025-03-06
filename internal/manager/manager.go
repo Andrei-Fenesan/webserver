@@ -4,11 +4,14 @@ import (
 	"io"
 	"log"
 	"net"
+	"path/filepath"
 	"strconv"
 	"webserver/internal/handler"
 	"webserver/internal/model/httpentity"
+	"webserver/internal/validator"
 )
 
+const HTTP_VERSION = "HTTP/1.1"
 const BUFF_SIZE = 1024
 const DEFAULT_SERVER_PORT = uint32(8080)
 
@@ -56,20 +59,27 @@ func (cm *ConcurrentConnectionManger) handleConnection(conn net.Conn) {
 		return
 	}
 	log.Println("Received request\n", string(data))
+
 	req, err := httpentity.ParseRequest(data)
 	if err != nil {
-		log.Fatal(err)
-		r := &httpentity.Response{ResponseCode: 400, Version: req.HttpVersion}
-		conn.Write(r.Encode())
+		log.Println(err)
+		conn.Write((&httpentity.Response{ResponseCode: 400, Version: HTTP_VERSION}).Encode())
 		return
 	}
+	if !validator.IsRequestValid(req) {
+		log.Printf("Invalid request: %s\n", req.Path)
+		conn.Write((&httpentity.Response{ResponseCode: 400, Version: HTTP_VERSION}).Encode())
+		return
+	}
+
+	canonizeRequest(req)
+
 	response, err := cm.requestHandler.ServeRequest(req)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return
 	}
-	responseData := response.Encode()
-	conn.Write(responseData)
+	conn.Write(response.Encode())
 }
 
 func readAll(conn net.Conn) ([]byte, error) {
@@ -98,4 +108,9 @@ func isReadingFinished(data []byte) bool {
 		return false
 	}
 	return data[len-4] == '\r' && data[len-3] == '\n' && data[len-2] == '\r' && data[len-1] == '\n'
+}
+
+// canonizeRequest will sanitize the request path
+func canonizeRequest(req *httpentity.Request) {
+	req.Path = filepath.Clean(req.Path)
 }

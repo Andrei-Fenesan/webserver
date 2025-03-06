@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"log"
 	"os"
 	"webserver/internal/model/httpentity"
 )
@@ -19,6 +20,7 @@ func NewHttpRequestHandler(searchDirectory string) *HttpRequestHandler {
 }
 
 func (rh *HttpRequestHandler) ServeRequest(req *httpentity.Request) (*httpentity.Response, error) {
+	log.Printf("Serving the request: %s\n", req)
 	switch req.HttpMethod {
 	case httpentity.GET:
 		return handleGetRequest(req, rh.searchDirectory), nil
