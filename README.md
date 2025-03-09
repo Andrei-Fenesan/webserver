@@ -10,6 +10,11 @@ The port and the directory can be configured using command-line flags:
 
 - Go 1.16 or later
 
+## Features
+- Serve static HTML files
+- Protect against directory traversal attacks
+- Support for command-line flags to configure the server
+
 ## Installation
 
 1. Clone the repository:
