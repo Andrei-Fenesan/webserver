@@ -82,6 +82,7 @@ func TestWebServer(t *testing.T) {
 
 	testServer := buildTestServer()
 	go testServer.Start()
+	defer testServer.Close()
 
 	for _, tc := range tt {
 		t.Run(tc.testName, func(t *testing.T) {
