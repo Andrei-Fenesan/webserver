@@ -34,12 +34,12 @@ func TestWebServer(t *testing.T) {
 		{
 			"Should return 200 OK and /index.html page from root server directory",
 			[]byte("GET / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: testagent\r\nAccept: */*\r\n\r\n"),
-			append([]byte("HTTP/1.1 200 OK\r\n\r\n"), getFileContent("index.html")...),
+			append([]byte("HTTP/1.1 200 OK\r\ncontent-type: text/html\r\ncontent-length: 183\r\n\r\n"), getFileContent("index.html")...),
 		},
 		{
 			"Should get 200 OK and /simple.html page from other directory inside the server root directory",
 			[]byte("GET /deep_pages/simple.html HTTP/1.1\r\nHost: localhost\r\nUser-Agent: testagent\r\nAccept: */*\r\n\r\n"),
-			append([]byte("HTTP/1.1 200 OK\r\n\r\n"), getFileContent("deep_pages/simple.html")...),
+			append([]byte("HTTP/1.1 200 OK\r\ncontent-type: text/html\r\ncontent-length: 419\r\n\r\n"), getFileContent("deep_pages/simple.html")...),
 		},
 		//400 BAD REQUEST requests
 		{

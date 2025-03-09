@@ -2,8 +2,11 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 	"webserver/internal/model/httpentity"
 )
 
@@ -40,5 +43,36 @@ func handleGetRequest(req *httpentity.Request, searchDirectpry string) *httpenti
 		return &httpentity.Response{ResponseCode: 404, Body: nil, Version: req.HttpVersion}
 	}
 
-	return &httpentity.Response{ResponseCode: 200, Body: content, Version: req.HttpVersion}
+	return &httpentity.Response{
+		ResponseCode: 200,
+		Body:         content,
+		Version:      req.HttpVersion,
+		Headers: map[string]string{
+			"content-type":   getContentType(filepath.Ext(path)),
+			"content-length": fmt.Sprintf("%d", len(content)),
+		}}
+
+}
+
+func getContentType(fileExtension string) string {
+	switch strings.ToLower(fileExtension) {
+	case ".html":
+		return "text/html"
+	case ".txt":
+		return "text/plain"
+	case ".css":
+		return "text/css"
+	case ".js":
+		return "application/javascript"
+	case ".json":
+		return "application/json"
+	case ".png":
+		return "image/png"
+	case ".jpg", ".jpeg":
+		return "image/jpeg"
+	case ".gif":
+		return "image/gif"
+	default:
+		return "application/octet-stream" // Default for unknown types
+	}
 }
