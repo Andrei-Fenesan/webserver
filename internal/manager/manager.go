@@ -17,12 +17,14 @@ const DEFAULT_SERVER_PORT = uint32(8080)
 
 type ConnectionManager interface {
 	Start() error
+	Close()
 	handleConnection(conn net.Conn)
 }
 
 type ConcurrentConnectionManger struct {
 	port           uint32
 	requestHandler handler.RequestHandler
+	listener       net.Listener
 }
 
 func NewConcurrentConnectionManger(rq handler.RequestHandler, port ...uint32) *ConcurrentConnectionManger {
@@ -39,15 +41,22 @@ func (cm *ConcurrentConnectionManger) Start() error {
 		panic(err)
 	}
 	defer listener.Close()
+	cm.listener = listener
 
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
 			log.Println("Error in listening" + err.Error())
-			continue
+			break
 		}
 		go cm.handleConnection(conn)
 	}
+	return nil
+}
+
+func (cm *ConcurrentConnectionManger) Close() {
+	log.Println("Closing server")
+	cm.listener.Close()
 }
 
 func (cm *ConcurrentConnectionManger) handleConnection(conn net.Conn) {
