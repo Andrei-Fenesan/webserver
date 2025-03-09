@@ -32,3 +32,6 @@ The port and the directory can be configured using command-line flags:
    ```
 ## Future Improvements
  - Add support for serving dynamic content using CGI.
+ - Add support for serving files over HTTPS.
+ - Add support for basic authentication.
+ - Add support for other HTTP methods (e.g., POST, PUT, DELETE).
