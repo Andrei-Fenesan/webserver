@@ -39,7 +39,7 @@ func ParseRequest(data []byte) (*Request, error) {
 
 func parseStartLine(startLine string) (HttpMethod, string, string, error) {
 	parts := strings.Split(startLine, " ")
-	if len(parts) < 3 {
+	if len(parts) != 3 {
 		return 0, "", "", errors.New("invalid request")
 	}
 	method := parts[0]

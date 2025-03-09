@@ -121,5 +121,5 @@ func isReadingFinished(data []byte) bool {
 
 // canonizeRequest will sanitize the request path
 func canonizeRequest(req *httpentity.Request) {
-	req.Path = filepath.Clean(req.Path)
+	req.Path = filepath.Clean("/" + req.Path)
 }

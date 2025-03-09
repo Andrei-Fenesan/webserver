@@ -16,7 +16,6 @@ func (response *Response) Encode() []byte {
 	antent := buildResponseCodeText(response.Version, response.ResponseCode)
 	data = append(data, []byte(antent)...)
 	data = append(data, response.Body...)
-	data = append(data, []byte{'\r', '\n'}...)
 	return data
 }
 

@@ -33,7 +33,9 @@ func handleGetRequest(req *httpentity.Request, searchDirectpry string) *httpenti
 	if path == "/" {
 		path = "/index.html"
 	}
-	content, err := os.ReadFile(searchDirectpry + path)
+	searchPath := searchDirectpry + path
+	log.Printf("Seaching for file: %s\n", searchPath)
+	content, err := os.ReadFile(searchPath)
 	if err != nil {
 		return &httpentity.Response{ResponseCode: 404, Body: nil, Version: req.HttpVersion}
 	}
