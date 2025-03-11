@@ -5,7 +5,7 @@ import (
 	"webserver/internal/model/httpentity"
 )
 
-var validPathRegex = regexp.MustCompile("^[a-zA-Z0-9$_@!%^&*()./]*$")
+var validPathRegex = regexp.MustCompile(`^[a-zA-Z0-9$_@!%^&\*()\./\+\-\?=]*$`)
 
 func IsRequestValid(req *httpentity.Request) bool {
 	return isPathValid(req.Path)
