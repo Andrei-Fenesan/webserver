@@ -6,12 +6,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMethodFromStringShouldReturnGetWhenMethodIsget(t *testing.T) {
+func TestMethodFromStringShouldMappedMethods(t *testing.T) {
 	assert := assert.New(t)
-
-	httMethod, err := methodFromString("get")
-	assert.Equal(GET, httMethod)
-	assert.Nil(err)
+	methods := map[string]HttpMethod{"get": GET, "post": POST, "put": PUT, "patch": PATCH, "delete": DELETE, "head": HEAD, "options": OPTIONS}
+	for key, val := range methods {
+		t.Run("Mapped "+key, func(t *testing.T) {
+			method, err := methodFromString(key)
+			assert.Equal(val, method)
+			assert.Nil(err)
+		})
+	}
 }
 
 func TestMethodFromStringShouldReturnErrorWhenUnknownMethod(t *testing.T) {

@@ -2,7 +2,6 @@ package handler
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -16,7 +15,7 @@ const PATH_INFO_ENV_NAME = "PATH_INFO"
 const QUERY_STRING_ENV_NAME = "QUERY_STRING"
 
 type RequestHandler interface {
-	ServeRequest(req *httpentity.Request) (*httpentity.Response, error)
+	ServeRequest(req *httpentity.Request) *httpentity.Response
 }
 
 type HttpRequestHandler struct {
@@ -27,13 +26,13 @@ func NewHttpRequestHandler(searchDirectory string) *HttpRequestHandler {
 	return &HttpRequestHandler{searchDirectory}
 }
 
-func (rh *HttpRequestHandler) ServeRequest(req *httpentity.Request) (*httpentity.Response, error) {
+func (rh *HttpRequestHandler) ServeRequest(req *httpentity.Request) *httpentity.Response {
 	log.Printf("Serving the request: %s\n", req)
 	switch req.HttpMethod {
 	case httpentity.GET:
-		return handleGetRequest(req, rh.searchDirectory), nil
+		return handleGetRequest(req, rh.searchDirectory)
 	}
-	return nil, errors.New("could not handle the request")
+	return &httpentity.Response{ResponseCode: 405, Body: nil, Version: req.HttpVersion}
 }
 
 func handleGetRequest(req *httpentity.Request, searchDirectpry string) *httpentity.Response {

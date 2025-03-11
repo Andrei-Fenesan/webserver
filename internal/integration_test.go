@@ -45,7 +45,7 @@ func TestWebServer(t *testing.T) {
 		{
 			"Should get 400 BAD REQUEST when method is not GET",
 			[]byte("POST /unknown.html HTTP/1.1\r\nHost: localhost\r\nUser-Agent: testagent\r\nAccept: */*\r\n\r\n"),
-			[]byte("HTTP/1.1 400 BAD REQUEST\r\n\r\n"),
+			[]byte("HTTP/1.1 405 METHOD NOT ALLOWED\r\n\r\n"),
 		},
 		{
 			"Should get 400 BAD REQUEST when the first line is malformated. Method is missing",

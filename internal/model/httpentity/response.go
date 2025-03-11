@@ -35,6 +35,10 @@ func getResponseMessage(responseCode uint16) string {
 		return "BAD REQUEST"
 	case 404:
 		return "NOT FOUND"
+	case 405:
+		return "METHOD NOT ALLOWED"
+	case 500:
+		return "INTERNAL SERVER ERROR"
 	}
 	return ""
 }

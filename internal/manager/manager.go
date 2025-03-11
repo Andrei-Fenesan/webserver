@@ -83,11 +83,7 @@ func (cm *ConcurrentConnectionManger) handleConnection(conn net.Conn) {
 
 	canonizeRequest(req)
 
-	response, err := cm.requestHandler.ServeRequest(req)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	response := cm.requestHandler.ServeRequest(req)
 	conn.Write(response.Encode())
 }
 
