@@ -38,6 +38,7 @@ The port and the directory can be configured using command-line flags:
    ```
 
 ## Run the webserver as a container
+All the command are relative to the webserver directory
 1. Build the image
 ```sh
 docker build --tag {insert_desired_image_neme}
@@ -54,7 +55,7 @@ docker cp ./{insert_resource_directory} {insert_above_container_name}:/app
 ```sh
 docker start {insert_above_container_name}
 ```
-Example of a single line command that do the same as the above:
+Example of a single line command that does the same as the above:
 ```sh
 docker build --tag websvimg . && docker create --name websv -p 9991:8080 websvimg && docker cp ./resources websv:/app && docker start websv
 ```
