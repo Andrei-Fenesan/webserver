@@ -36,7 +36,7 @@ func NewConcurrentConnectionManger(rq handler.RequestHandler, port ...uint32) *C
 }
 
 func (cm *ConcurrentConnectionManger) Start() error {
-	listener, err := net.Listen("tcp", "localhost:"+strconv.FormatUint(uint64(cm.port), 10))
+	listener, err := net.Listen("tcp", "0.0.0.0:"+strconv.FormatUint(uint64(cm.port), 10))
 	if err != nil {
 		panic(err)
 	}

@@ -37,6 +37,28 @@ The port and the directory can be configured using command-line flags:
    go build
    ```
 
+## Run the webserver as a container
+1. Build the image
+```sh
+docker build --tag {insert_desired_image_neme}
+```
+2. Create the container
+```sh
+docker create --name {insert_desired_container_neme} -p {desired_port}:8080 {insert_above_image_name}
+```
+3. Copy the resources in the container from the host filesytem
+```sh
+docker cp ./{insert_resource_directory} {insert_above_container_name}:/app
+```
+4. Start the container
+```sh
+docker start {insert_above_container_name}
+```
+Example of a single line command that do the same as the above:
+```sh
+docker build --tag websvimg . && docker create --name websv -p 9991:8080 websvimg && docker cp ./resources websv:/app && docker start websv
+```
+
 ## Future Improvements
  - Add support for serving files over HTTPS.
  - Add support for basic authentication.
