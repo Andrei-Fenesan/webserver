@@ -2,17 +2,19 @@ package handler
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"webserver/internal/linetermination"
 	"webserver/internal/model/httpentity"
 )
 
-const PATH_INFO_ENV_NAME = "PATH_INFO"
-const QUERY_STRING_ENV_NAME = "QUERY_STRING"
+const PathInfoEnvName = "PATH_INFO"
+const QueryStringEnvName = "QUERY_STRING"
 
 type RequestHandler interface {
 	ServeRequest(req *httpentity.Request) *httpentity.Response
@@ -31,16 +33,17 @@ func (rh *HttpRequestHandler) ServeRequest(req *httpentity.Request) *httpentity.
 	switch req.HttpMethod {
 	case httpentity.GET:
 		return handleGetRequest(req, rh.searchDirectory)
+	default:
+		return &httpentity.Response{ResponseCode: 405, Body: nil, Version: req.HttpVersion}
 	}
-	return &httpentity.Response{ResponseCode: 405, Body: nil, Version: req.HttpVersion}
 }
 
-func handleGetRequest(req *httpentity.Request, searchDirectpry string) *httpentity.Response {
+func handleGetRequest(req *httpentity.Request, searchDirectory string) *httpentity.Response {
 	path := req.Path
 	if path == "/" {
 		path = "/index.html"
 	}
-	searchPath := searchDirectpry + path
+	searchPath := searchDirectory + path
 	log.Printf("Seaching for file: %s\n", searchPath)
 	if isCGI(searchPath) {
 		return handleCGIRequest(req, searchPath)
@@ -55,15 +58,14 @@ func isCGI(path string) bool {
 
 func handleCGIRequest(req *httpentity.Request, searchPath string) *httpentity.Response {
 	//search for the CGI exec and add PATH_INFO and QUERY_PARAM variables
-	cgiIndex := strings.Index(searchPath, ".cgi")
-	if cgiIndex == -1 {
-		//no cgi executable found
+	cgiExecutablePath, queryParams, err := parseSearchPath(searchPath)
+	if err != nil {
+		log.Printf("Cgi not found in search path: %s\n", searchPath)
 		return &httpentity.Response{ResponseCode: 404, Body: nil, Version: req.HttpVersion}
 	}
-	cgiExecutablePath := searchPath[:(cgiIndex + 4)]
 
 	cmd := exec.Command(cgiExecutablePath)
-	cmd.Env = prepareCgiEnvs(searchPath[(cgiIndex + 4):])
+	cmd.Env = prepareCgiEnvs(queryParams)
 	data, err := cmd.Output()
 	if err == nil {
 		// extract headers and add the content-length header
@@ -79,6 +81,20 @@ func handleCGIRequest(req *httpentity.Request, searchPath string) *httpentity.Re
 	return &httpentity.Response{ResponseCode: 404, Body: nil, Version: req.HttpVersion}
 }
 
+func parseSearchPath(searchPath string) (cgiExecutablePath string, queryParams string, err error) {
+	const cgiExtensionLength = 4
+	cgiIndex := strings.Index(searchPath, ".cgi")
+	if cgiIndex == -1 {
+		//no cgi executable found
+		return "", "", errors.New("cgi not found")
+	}
+
+	cgiExecutablePath = searchPath[:(cgiIndex + cgiExtensionLength)]
+	queryParams = searchPath[(cgiIndex + cgiExtensionLength):]
+	err = nil
+	return
+}
+
 func prepareCgiEnvs(path string) []string {
 	var pathInfoEnvValue string
 	var queryEnvValue string
@@ -90,8 +106,8 @@ func prepareCgiEnvs(path string) []string {
 		queryEnvValue = path[queryIndex:]
 	}
 	return []string{
-		createEnv(PATH_INFO_ENV_NAME, pathInfoEnvValue),
-		createEnv(QUERY_STRING_ENV_NAME, queryEnvValue),
+		createEnv(PathInfoEnvName, pathInfoEnvValue),
+		createEnv(QueryStringEnvName, queryEnvValue),
 	}
 }
 
@@ -117,11 +133,11 @@ func handleSimpleRequest(req *httpentity.Request, searchPath string) *httpentity
 
 func extractHeadersAndBody(body []byte) (map[string]string, []byte) {
 	headers := make(map[string]string)
-	returedHeaders, after, _ := bytes.Cut(body, []byte{'\n', '\n'})
-	stringReturnedHeaders := string(returedHeaders)
+	returnedHeaders, after, _ := bytes.Cut(body, linetermination.GetLineTermination())
+	stringReturnedHeaders := string(returnedHeaders)
 	for _, headerLine := range strings.Split(stringReturnedHeaders, string([]byte{'\n'})) {
-		headerSplited := strings.Split(headerLine, ": ")
-		headers[headerSplited[0]] = headerSplited[1]
+		headerSplit := strings.Split(headerLine, ": ")
+		headers[headerSplit[0]] = headerSplit[1]
 	}
 	return headers, after
 }

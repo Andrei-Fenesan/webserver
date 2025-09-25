@@ -10,7 +10,7 @@ import (
 func main() {
 	var rootDirectory string
 	var port int
-	flag.StringVar(&rootDirectory, "src", "./resources", "The root direcotory from which the resource will be served")
+	flag.StringVar(&rootDirectory, "src", "./resources", "The root directory from which the resource will be served")
 	flag.IntVar(&port, "port", 8080, "The server port")
 	flag.Parse()
 
