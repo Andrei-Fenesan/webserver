@@ -4,7 +4,7 @@ import (
 	"io"
 	"log"
 	"net"
-	"path/filepath"
+	"path"
 	"strconv"
 	"webserver/internal/handler"
 	"webserver/internal/model/httpentity"
@@ -108,14 +108,14 @@ func readAll(conn net.Conn) ([]byte, error) {
 }
 
 func isReadingFinished(data []byte) bool {
-	len := len(data)
-	if len < 4 {
+	length := len(data)
+	if length < 4 {
 		return false
 	}
-	return data[len-4] == '\r' && data[len-3] == '\n' && data[len-2] == '\r' && data[len-1] == '\n'
+	return data[length-4] == '\r' && data[length-3] == '\n' && data[length-2] == '\r' && data[length-1] == '\n'
 }
 
 // canonizeRequest will sanitize the request path
 func canonizeRequest(req *httpentity.Request) {
-	req.Path = filepath.Clean("/" + req.Path)
+	req.Path = path.Clean("/" + req.Path)
 }

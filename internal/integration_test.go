@@ -34,12 +34,12 @@ func TestWebServer(t *testing.T) {
 		{
 			"Should return 200 OK and /index.html page from root server directory",
 			[]byte("GET / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: testagent\r\nAccept: */*\r\n\r\n"),
-			append([]byte("HTTP/1.1 200 OK\r\ncontent-type: text/html\r\ncontent-length: 183\r\n\r\n"), getFileContent("index.html")...),
+			append([]byte("HTTP/1.1 200 OK\r\ncontent-type: text/html\r\ncontent-length: 192\r\n\r\n"), getFileContent("index.html")...),
 		},
 		{
 			"Should get 200 OK and /simple.html page from other directory inside the server root directory",
 			[]byte("GET /deep_pages/simple.html HTTP/1.1\r\nHost: localhost\r\nUser-Agent: testagent\r\nAccept: */*\r\n\r\n"),
-			append([]byte("HTTP/1.1 200 OK\r\ncontent-type: text/html\r\ncontent-length: 419\r\n\r\n"), getFileContent("deep_pages/simple.html")...),
+			append([]byte("HTTP/1.1 200 OK\r\ncontent-type: text/html\r\ncontent-length: 435\r\n\r\n"), getFileContent("deep_pages/simple.html")...),
 		},
 		//400 BAD REQUEST requests
 		{
@@ -48,22 +48,22 @@ func TestWebServer(t *testing.T) {
 			[]byte("HTTP/1.1 405 METHOD NOT ALLOWED\r\n\r\n"),
 		},
 		{
-			"Should get 400 BAD REQUEST when the first line is malformated. Method is missing",
+			"Should get 400 BAD REQUEST when the first line is malformed. Method is missing",
 			[]byte("/unknown.html HTTP/1.1\r\nHost: localhost\r\nUser-Agent: testagent\r\nAccept: */*\r\n\r\n"),
 			[]byte("HTTP/1.1 400 BAD REQUEST\r\n\r\n"),
 		},
 		{
-			"Should get 400 BAD REQUEST when the first line is malformated. Path is missing",
+			"Should get 400 BAD REQUEST when the first line is malformed. Path is missing",
 			[]byte("GET HTTP/1.1\r\nHost: localhost\r\nUser-Agent: testagent\r\nAccept: */*\r\n\r\n"),
 			[]byte("HTTP/1.1 400 BAD REQUEST\r\n\r\n"),
 		},
 		{
-			"Should get 400 BAD REQUEST when the first line is malformated. More parts than allowed",
+			"Should get 400 BAD REQUEST when the first line is malformed. More parts than allowed",
 			[]byte("GET / HTTP/1.1 asd\r\nHost: localhost\r\nUser-Agent: testagent\r\nAccept: */*\r\n\r\n"),
 			[]byte("HTTP/1.1 400 BAD REQUEST\r\n\r\n"),
 		},
 		{
-			"Should get 400 BAD REQUEST when the headers are malformated",
+			"Should get 400 BAD REQUEST when the headers are malformed",
 			[]byte("GET HTTP/1.1\r\nHost-localhost\r\nUser-Agent: testagent\r\nAccept: */*\r\n\r\n"),
 			[]byte("HTTP/1.1 400 BAD REQUEST\r\n\r\n"),
 		},
@@ -99,8 +99,8 @@ func TestWebServer(t *testing.T) {
 			response := make([]byte, 4056)
 			if read, err := conn.Read(response); err == nil {
 				if !bytes.Equal(response[:read], tc.expectedResponse) {
-					fmt.Printf("response[:read]: %s\n", string(response[:read]))
-					t.Error("response did not match expected output")
+					fmt.Printf("response[:read]:\n%s\n", string(response[:read]))
+					t.Errorf("response did not match expected output. Expected:\n%s\n", tc.expectedResponse)
 				}
 			} else {
 				t.Error("could not read from connection")
