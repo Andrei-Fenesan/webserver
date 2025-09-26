@@ -8,12 +8,13 @@ import (
 	"strconv"
 	"webserver/internal/handler"
 	"webserver/internal/model/httpentity"
+	"webserver/internal/ssl"
 	"webserver/internal/validator"
 )
 
-const HTTP_VERSION = "HTTP/1.1"
-const BUFF_SIZE = 1024
-const DEFAULT_SERVER_PORT = uint32(8080)
+const HttpVersion = "HTTP/1.1"
+const BuffSize = 1024
+const DefaultServerPort = uint32(8080)
 
 type ConnectionManager interface {
 	Start() error
@@ -24,15 +25,16 @@ type ConnectionManager interface {
 type ConcurrentConnectionManger struct {
 	port           uint32
 	requestHandler handler.RequestHandler
+	sslHandler     *ssl.ConnectionHandler
 	listener       net.Listener
 }
 
-func NewConcurrentConnectionManger(rq handler.RequestHandler, port ...uint32) *ConcurrentConnectionManger {
-	actualPort := DEFAULT_SERVER_PORT
+func NewConcurrentConnectionManger(rq handler.RequestHandler, sh *ssl.ConnectionHandler, port ...uint32) *ConcurrentConnectionManger {
+	actualPort := DefaultServerPort
 	if len(port) > 0 {
 		actualPort = port[0]
 	}
-	return &ConcurrentConnectionManger{port: actualPort, requestHandler: rq}
+	return &ConcurrentConnectionManger{port: actualPort, requestHandler: rq, sslHandler: sh}
 }
 
 func (cm *ConcurrentConnectionManger) Start() error {
@@ -49,7 +51,12 @@ func (cm *ConcurrentConnectionManger) Start() error {
 			log.Println("Error in listening" + err.Error())
 			break
 		}
-		go cm.handleConnection(conn)
+		tlsConn, err := cm.sslHandler.PerformHandshake(conn)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		go cm.handleConnection(tlsConn)
 	}
 	return nil
 }
@@ -72,12 +79,12 @@ func (cm *ConcurrentConnectionManger) handleConnection(conn net.Conn) {
 	req, err := httpentity.ParseRequest(data)
 	if err != nil {
 		log.Println(err)
-		conn.Write((&httpentity.Response{ResponseCode: 400, Version: HTTP_VERSION}).Encode())
+		conn.Write((&httpentity.Response{ResponseCode: 400, Version: HttpVersion}).Encode())
 		return
 	}
 	if !validator.IsRequestValid(req) {
 		log.Printf("Invalid request: %s\n", req.Path)
-		conn.Write((&httpentity.Response{ResponseCode: 400, Version: HTTP_VERSION}).Encode())
+		conn.Write((&httpentity.Response{ResponseCode: 400, Version: HttpVersion}).Encode())
 		return
 	}
 
@@ -88,9 +95,9 @@ func (cm *ConcurrentConnectionManger) handleConnection(conn net.Conn) {
 }
 
 func readAll(conn net.Conn) ([]byte, error) {
-	data := make([]byte, 0, 4*BUFF_SIZE)
+	data := make([]byte, 0, 4*BuffSize)
 	for {
-		buff := make([]byte, BUFF_SIZE)
+		buff := make([]byte, BuffSize)
 		read, err := conn.Read(buff)
 		if err != nil {
 			if err == io.EOF {
