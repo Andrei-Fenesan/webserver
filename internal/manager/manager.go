@@ -6,9 +6,9 @@ import (
 	"net"
 	"path"
 	"strconv"
+	"webserver/internal/connection-preparer"
 	"webserver/internal/handler"
 	"webserver/internal/model/httpentity"
-	"webserver/internal/ssl"
 	"webserver/internal/validator"
 )
 
@@ -23,18 +23,18 @@ type ConnectionManager interface {
 }
 
 type ConcurrentConnectionManger struct {
-	port           uint32
-	requestHandler handler.RequestHandler
-	sslHandler     *ssl.ConnectionHandler
-	listener       net.Listener
+	port               uint32
+	requestHandler     handler.RequestHandler
+	connectionPreparer connection_preparer.ConnectionPreparer
+	listener           net.Listener
 }
 
-func NewConcurrentConnectionManger(rq handler.RequestHandler, sh *ssl.ConnectionHandler, port ...uint32) *ConcurrentConnectionManger {
+func NewConcurrentConnectionManger(rq handler.RequestHandler, sh connection_preparer.ConnectionPreparer, port ...uint32) *ConcurrentConnectionManger {
 	actualPort := DefaultServerPort
 	if len(port) > 0 {
 		actualPort = port[0]
 	}
-	return &ConcurrentConnectionManger{port: actualPort, requestHandler: rq, sslHandler: sh}
+	return &ConcurrentConnectionManger{port: actualPort, requestHandler: rq, connectionPreparer: sh}
 }
 
 func (cm *ConcurrentConnectionManger) Start() error {
@@ -47,16 +47,19 @@ func (cm *ConcurrentConnectionManger) Start() error {
 
 	for {
 		conn, err := listener.Accept()
-		if err != nil {
-			log.Println("Error in listening" + err.Error())
-			break
-		}
-		tlsConn, err := cm.sslHandler.PerformHandshake(conn)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-		go cm.handleConnection(tlsConn)
+		go func() {
+			if err != nil {
+				log.Println("Error in listening" + err.Error())
+				return
+			}
+			defer conn.Close()
+			actualConn, err := cm.connectionPreparer.Prepare(conn)
+			if err != nil {
+				log.Println("Error in preparing" + err.Error())
+				return
+			}
+			cm.handleConnection(actualConn)
+		}()
 	}
 	return nil
 }
@@ -67,7 +70,6 @@ func (cm *ConcurrentConnectionManger) Close() {
 }
 
 func (cm *ConcurrentConnectionManger) handleConnection(conn net.Conn) {
-	defer conn.Close()
 
 	data, err := readAll(conn)
 	if err != nil {

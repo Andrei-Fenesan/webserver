@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"log"
+	"webserver/internal/connection-preparer"
 	"webserver/internal/handler"
 	"webserver/internal/manager"
-	"webserver/internal/ssl"
 )
 
 func main() {
@@ -21,9 +21,18 @@ func main() {
 
 	actualPort := uint32(port)
 	requestHandler := handler.NewHttpRequestHandler(rootDirectory)
-	sslHandler := ssl.NewConnectionHandler("./certs/key.pem", "./certs/cert.pem")
-	sslHandler.Initialize()
-	connManager := manager.NewConcurrentConnectionManger(requestHandler, sslHandler, actualPort)
+	connectionPreparer := getConnectionPreparer(certificatePath, privateKeyPath)
+	connManager := manager.NewConcurrentConnectionManger(requestHandler, connectionPreparer, actualPort)
 	log.Printf("The server will start on port: %d, using the root direcotry: %s\n", actualPort, rootDirectory)
 	connManager.Start()
+}
+
+func getConnectionPreparer(certificatePath string, privateKeyPath string) connection_preparer.ConnectionPreparer {
+	if certificatePath != "" && privateKeyPath != "" {
+		log.Println("Loading certificate and private key")
+		sslHandler := connection_preparer.NewConnectionHandler(privateKeyPath, certificatePath)
+		sslHandler.Initialize()
+		return sslHandler
+	}
+	return &connection_preparer.PlainConnectionPreparer{}
 }
