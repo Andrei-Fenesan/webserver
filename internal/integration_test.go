@@ -6,13 +6,14 @@ import (
 	"net"
 	"os"
 	"testing"
+	connection_preparer "webserver/internal/connection-preparer"
 	"webserver/internal/handler"
 	"webserver/internal/manager"
 )
 
 func buildTestServer() manager.ConnectionManager {
 	requestHandler := handler.NewHttpRequestHandler("../resources_test")
-	return manager.NewConcurrentConnectionManger(requestHandler, 9191)
+	return manager.NewConcurrentConnectionManger(requestHandler, &connection_preparer.PlainConnectionPreparer{}, 9191)
 }
 
 func getFileContent(pagePath string) []byte {
