@@ -26,8 +26,7 @@ func main() {
 
 	var serverWaitGroup sync.WaitGroup
 	actualHttpPort := uint32(httpPort)
-	requestHandler := handler.NewRedirectToHttpsRequestHandler(httpRedirectTo)
-	httpConnManager := manager.NewConcurrentConnectionManger(requestHandler, &connection_preparer.PlainConnectionPreparer{}, actualHttpPort)
+	httpConnManager := initialiseHttpConnectionManager(certificatePath, privateKeyPath, httpRedirectTo, rootDirectory, actualHttpPort)
 	serverWaitGroup.Add(1)
 
 	actualHttpsPort := uint32(httpsPort)
@@ -70,4 +69,15 @@ func initialiseHttpsConnectionManager(certificatePath string, privateKeyPath str
 		return manager.NewConcurrentConnectionManger(requestHandler, sslConnectionPreparer, httpsPort)
 	}
 	return nil
+}
+
+func initialiseHttpConnectionManager(certificatePath string, privateKeyPath string, redirectTo string, rootDirectory string, httpPort uint32) manager.ConnectionManager {
+	sslConnectionPreparer := &connection_preparer.PlainConnectionPreparer{}
+	if certificatePath != "" && privateKeyPath != "" {
+		requestHandler := handler.NewRedirectToHttpsRequestHandler(redirectTo)
+		return manager.NewConcurrentConnectionManger(requestHandler, sslConnectionPreparer, httpPort)
+	} else {
+		requestHandler := handler.NewHttpRequestHandler(rootDirectory)
+		return manager.NewConcurrentConnectionManger(requestHandler, sslConnectionPreparer, httpPort)
+	}
 }
