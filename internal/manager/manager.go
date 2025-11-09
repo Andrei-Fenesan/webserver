@@ -6,7 +6,7 @@ import (
 	"net"
 	"path"
 	"strconv"
-	"webserver/internal/connection-preparer"
+	connection_preparer "webserver/internal/connection-preparer"
 	"webserver/internal/handler"
 	"webserver/internal/model/httpentity"
 	"webserver/internal/validator"
@@ -49,7 +49,7 @@ func (cm *ConcurrentConnectionManger) Start() error {
 		conn, err := listener.Accept()
 		go func() {
 			if err != nil {
-				log.Println("Error in listening" + err.Error())
+				log.Println("Error in listening " + err.Error())
 				return
 			}
 			defer conn.Close()
@@ -73,7 +73,7 @@ func (cm *ConcurrentConnectionManger) handleConnection(conn net.Conn) {
 
 	data, err := readAll(conn)
 	if err != nil {
-		log.Println("Error in listening" + err.Error())
+		log.Println("Error in reading data " + err.Error())
 		return
 	}
 	log.Println("Received request\n", string(data))

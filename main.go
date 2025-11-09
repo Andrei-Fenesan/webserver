@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 	"sync"
-	"webserver/internal/connection-preparer"
+	connection_preparer "webserver/internal/connection-preparer"
 	"webserver/internal/handler"
 	"webserver/internal/manager"
 )
@@ -72,12 +72,12 @@ func initialiseHttpsConnectionManager(certificatePath string, privateKeyPath str
 }
 
 func initialiseHttpConnectionManager(certificatePath string, privateKeyPath string, redirectTo string, rootDirectory string, httpPort uint32) manager.ConnectionManager {
-	sslConnectionPreparer := &connection_preparer.PlainConnectionPreparer{}
+	plainConnectionPreparer := &connection_preparer.PlainConnectionPreparer{}
 	if certificatePath != "" && privateKeyPath != "" {
 		requestHandler := handler.NewRedirectToHttpsRequestHandler(redirectTo)
-		return manager.NewConcurrentConnectionManger(requestHandler, sslConnectionPreparer, httpPort)
+		return manager.NewConcurrentConnectionManger(requestHandler, plainConnectionPreparer, httpPort)
 	} else {
 		requestHandler := handler.NewHttpRequestHandler(rootDirectory)
-		return manager.NewConcurrentConnectionManger(requestHandler, sslConnectionPreparer, httpPort)
+		return manager.NewConcurrentConnectionManger(requestHandler, plainConnectionPreparer, httpPort)
 	}
 }
