@@ -31,6 +31,8 @@ func getResponseMessage(responseCode uint16) string {
 	switch responseCode {
 	case 200:
 		return "OK"
+	case 302:
+		return "FOUND"
 	case 400:
 		return "BAD REQUEST"
 	case 404:
